@@ -1,0 +1,34 @@
+name: Weekly Cronjob
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+
+permissions:
+  contents: write
+
+jobs:
+  grept-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+      - name: grept-apply
+        run: |
+          docker run --rm -v $(pwd):/src -w /src mcr.microsoft.com/azterraform:latest make grept-apply
+      - name: Commit & Push changes
+        run: |
+          if [[ ${{ github.actor }} = ${{ vars.BOT_NAME }} ]]; then
+            exit 0
+          fi
+          HEAD_HASH=$(git rev-parse HEAD)
+          git checkout -b POST_$HEAD_HASH
+          git config --global user.email "post-push[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git commit -am "Auto Update"
+          PR_SHA=$(git rev-parse HEAD)
+          git push -f -u origin POST_$HEAD_HASH
+          echo ${{ secrets.PAT }} | gh auth login --with-token
+          gh pr create --base $default_branch --title "POST_$HEAD_HASH" --body "Auto update"
+          PR_NUMBER=$(gh pr list --head "POST_$HEAD_HASH" --json number | jq .[0].number)
+          gh pr merge $PR_NUMBER --delete-branch --match-head-commit $PR_SHA --rebase --admin

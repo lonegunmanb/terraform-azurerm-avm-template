@@ -13,8 +13,10 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-      - name: grept-apply
+      - id: grept-apply
         run: |
           docker run --rm -v $(pwd):/src -w /src mcr.microsoft.com/azterraform:latest make grept-apply
-      - name: Commit & Push changes
-        run: |
+          echo "CHANGED_FILES_COUNT=$(git diff --name-only | wc -l)" >> $GITHUB_OUTPUT
+      - name: Create Pull Request
+        if: steps.grept-apply.outputs.CHANGED_FILES_COUNT!='0'
+        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38 #v5.0.2

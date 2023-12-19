@@ -7,5 +7,5 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.0.0.0/16"]
   location            = var.location
   name                = var.name
-  resource_group_name = data.azurerm_resource_group.parent.name
+  resource_group_name = data.azurerm_resource_group.parent[0].name
 }

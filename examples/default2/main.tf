@@ -54,4 +54,5 @@ module "test" {
   enable_telemetry    = var.enable_telemetry # see variables.tf
   name                = "name${random_integer.region_index.result}"
   resource_group_name = azurerm_resource_group.this.name
+  location            = "eastus"
 }

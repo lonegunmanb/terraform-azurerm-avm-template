@@ -7,6 +7,9 @@ runs:
     - name: fmt check
       shell: bash
       run: |
+        pwd
+        ls
+        cat Makefile
         docker run --rm -v $(pwd):/src -w /src mcr.microsoft.com/azterraform make fmtcheck
 
     - name: docs check
